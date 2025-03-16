@@ -3,6 +3,8 @@
   stdenv,
   cmake,
   fetchFromGitHub,
+  tbb,
+  useTBB ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -12,7 +14,8 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "BLAKE3-team";
     repo = "BLAKE3";
-    tag = finalAttrs.version;
+    rev = "a2516b78c2617d9ad289aeec91a02cb05d70cc17";
+    # tag = finalAttrs.version;
     hash = "sha256-YJ3rRzpmF6oS8p377CEoRteARCD1lr/L7/fbN5poUXw=";
   };
 
@@ -22,7 +25,12 @@ stdenv.mkDerivation (finalAttrs: {
     cmake
   ];
 
+  buildInputs = [] ++ lib.optionals useTBB [
+    tbb
+  ];
+
   cmakeFlags = [
+    (lib.cmakeBool "BLAKE3_USE_TBB" useTBB)
     (lib.cmakeBool "BUILD_SHARED_LIBS" (!stdenv.hostPlatform.isStatic))
   ];
 
@@ -33,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
       asl20
       cc0
     ];
-    maintainers = with lib.maintainers; [ fgaz ];
+    maintainers = with lib.maintainers; [ fgaz silvanshade ];
     platforms = lib.platforms.all;
   };
 })
